@@ -1,0 +1,53 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "description": "Wählen Sie, ob Sie interne oder externe Szenen konfigurieren möchten.",
+                "menu_options": {
+                    "configure_internal_scenes": "Home Assistant Szenen (zuerst auswählen)",
+                    "select_external_scenes": "EXPERIMENTELL: Externe Szenen"
+                },
+                "title": "Stateful Scenes konfigurieren."
+            },
+            "configure_internal_scenes": {
+                "description": "Legen Sie den Pfad zur Szenendatei fest (Standardpfad funktioniert mit Home Assistant OS).",
+                "data": {
+                    "scene_path": "Pfad zur Szenendatei",
+                    "number_tolerance": "Rundungstoleranz",
+                    "restore_states_on_deactivate": "Zustände bei Deaktivierung wiederherstellen",
+                    "transition_time": "Übergangszeit",
+                    "debounce_time": "Entprellzeit",
+                    "ignore_unavailable": "Entitäten im 'nicht verfügbar'-Status ignorieren",
+                    "enable_discovery": "Erkennung aktivieren"
+                }
+            },
+            "select_external_scenes": {
+                "description": "EXPERIMENTELL!\nWählen Sie die Szenen, die nicht in der Konfigurationsdatei enthalten sind und die Sie konfigurieren möchten. Diese Szenen können von Stateful Scenes gelernt werden.",
+                "data": {
+                    "external_scenes": "Externe Szenen"
+                }
+            },
+            "configure_external_scene_entities": {
+                "description": "Wählen Sie die Entitäten, die zur Szene {scene_name} gehören.\nHinweis: Nach dem Bestätigen wird die Szene aktiviert!",
+                "data": {
+                    "scene_name": "Szenenname",
+                    "scene_id": "Szenen-ID",
+                    "scene_entities": "Szenen-Entitäten"
+                }
+            },
+            "learn_external_scene": {
+                "description": "Bestätigen Sie, ob die Szene aktiviert wurde.",
+                "data": {
+                    "external_scene_active": "Aktiviert?"
+                }
+            }
+        },
+        "error": {
+            "invalid_yaml": "Ungültige Szenendatei",
+            "yaml_not_found": "Angegebene YAML-Datei nicht gefunden",
+            "unknown": "Unbekannter Fehler aufgetreten",
+            "no_entity_id": "Keine Entitäten-ID gefunden",
+            "hub_not_found": "Haupteintrag nicht gefunden, konfigurieren Sie zuerst Stateful Scenes"
+        }
+    }
+}
