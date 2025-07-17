@@ -16,10 +16,13 @@
                     "number_tolerance": "Rounding tolerance",
                     "restore_states_on_deactivate": "Restore states on deactivation",
                     "transition_time": "Transition time",
-                    "debounce_time": "Debounce time",
-                    "ignore_unavailable": "Ignore entities in unavailable state",
-                    "enable_discovery": "Enable discovery"
-                }
+          "debounce_time": "Debounce time",
+          "ignore_unavailable": "Ignore entities in unavailable state",
+          "enable_discovery": "Enable discovery",
+          "z2m_learning_enabled": "Enable Z2M scene learning",
+          "z2m_api_url": "Z2M API URL",
+          "z2m_transition_time": "Z2M learning timeout"
+        }
             },
             "select_external_scenes": {
                 "description": "EXPERIMENTAL!\nSelect the scenes not in the config file that you'd like to configure. These scenes will need to be learned by Stateful Scenes.",
