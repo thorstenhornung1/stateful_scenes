@@ -11,5 +11,6 @@
   "requirements": [
     "aiofiles"
   ],
-  "version": "1.7.2"
+  "dependencies": ["repairs"],
+  "version": "1.7.3"
 }
