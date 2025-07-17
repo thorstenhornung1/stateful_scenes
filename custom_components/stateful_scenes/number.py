@@ -22,6 +22,7 @@ from .const import (
     TOLERANCE_STEP,
     DEVICE_INFO_MANUFACTURER,
     DOMAIN,
+    DEFAULT_Z2M_TRANSITION_TIME,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -45,6 +46,7 @@ async def async_setup_entry(
         hub = data[entry.entry_id]
         for scene in hub.scenes:
             entities += [TransitionNumber(scene), DebounceTime(scene), Tolerance(scene)]
+        entities.append(Z2MTransitionNumber(hub))
 
     elif isinstance(data[entry.entry_id], StatefulScenes.Scene):
         scene = data[entry.entry_id]
@@ -236,9 +238,54 @@ class Tolerance(RestoreNumber):
                     self._scene.name,
                     last_number_data.native_value,
                 )
-                self._scene.set_number_tolerance(last_number_data.native_value)
+        self._scene.set_number_tolerance(last_number_data.native_value)
 
     @property
     def native_value(self) -> float:
         """Return the entity value to represent the entity state."""
         return self._scene.number_tolerance
+
+
+class Z2MTransitionNumber(RestoreNumber):
+    """Number entity for Zigbee2MQTT learning timeout."""
+
+    _attr_native_max_value = 30
+    _attr_native_min_value = 1
+    _attr_native_step = 0.5
+    _attr_native_unit_of_measurement = "seconds"
+    _attr_name = "Z2M Learning Timeout"
+    _attr_entity_category = EntityCategory.CONFIG
+
+    def __init__(self, hub: StatefulScenes.Hub) -> None:
+        """Initialize number entity."""
+        self._hub = hub
+        self._attr_unique_id = "stateful_hub_z2m_timeout"
+        self._name = "Z2M Learning Timeout"
+
+    @property
+    def device_info(self) -> DeviceInfo | None:
+        """Return device information for HA."""
+        return DeviceInfo(
+            identifiers={("stateful_scenes", "hub")},
+            name="Stateful Scenes",
+            manufacturer=DEVICE_INFO_MANUFACTURER,
+        )
+
+    async def async_set_native_value(self, value: float) -> None:
+        """Persist new value to hub."""
+        self._hub.z2m_transition_time = value
+
+    async def async_added_to_hass(self) -> None:
+        """Handle entity added to hass."""
+        await super().async_added_to_hass()
+        if (last_state := await self.async_get_last_state()) and (
+            last_number_data := await self.async_get_last_number_data()
+        ):
+            if last_state.state not in (STATE_UNKNOWN, STATE_UNAVAILABLE):
+                self._hub.z2m_transition_time = last_number_data.native_value
+
+    @property
+    def native_value(self) -> float:
+        """Return current value."""
+        return self._hub.z2m_transition_time or DEFAULT_Z2M_TRANSITION_TIME
+

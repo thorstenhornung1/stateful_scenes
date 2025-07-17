@@ -39,6 +39,12 @@ from .const import (
     TRANSITION_MAX,
     TRANSITION_MIN,
     TRANSITION_STEP,
+    CONF_Z2M_LEARNING_ENABLED,
+    CONF_Z2M_API_URL,
+    CONF_Z2M_TRANSITION_TIME,
+    DEFAULT_Z2M_LEARNING_ENABLED,
+    DEFAULT_Z2M_API_URL,
+    DEFAULT_Z2M_TRANSITION_TIME,
     StatefulScenesYamlInvalid,
     StatefulScenesYamlNotFound,
 )
@@ -144,6 +150,21 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     vol.Optional(
                         CONF_ENABLE_DISCOVERY, default=DEFAULT_ENABLE_DISCOVERY
                     ): selector.BooleanSelector(),
+                    vol.Optional(
+                        CONF_Z2M_LEARNING_ENABLED,
+                        default=DEFAULT_Z2M_LEARNING_ENABLED,
+                    ): selector.BooleanSelector(),
+                    vol.Optional(
+                        CONF_Z2M_API_URL, default=DEFAULT_Z2M_API_URL
+                    ): selector.TextSelector(),
+                    vol.Optional(
+                        CONF_Z2M_TRANSITION_TIME,
+                        default=DEFAULT_Z2M_TRANSITION_TIME,
+                    ): selector.NumberSelector(
+                        selector.NumberSelectorConfig(
+                            min=1.0, max=30.0, step=0.5, unit_of_measurement="seconds"
+                        )
+                    ),
                 }
             ),
             errors=errors,

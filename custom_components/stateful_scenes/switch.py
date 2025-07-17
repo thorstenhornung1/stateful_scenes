@@ -81,6 +81,7 @@ async def async_setup_entry(
                 IgnoreUnavailable(scene),
                 IgnoreAttributes(scene),
             ]
+        entities.append(Z2MLearningSwitch(hub))
 
     elif isinstance(data[entry.entry_id], StatefulScenes.Scene):
         scene = data[entry.entry_id]
@@ -387,3 +388,45 @@ class IgnoreAttributes(SwitchEntity, RestoreEntity):
             return
         self._scene.set_ignore_attributes(state.state == STATE_ON)
         self._is_on = state.state == STATE_ON
+
+
+class Z2MLearningSwitch(SwitchEntity, RestoreEntity):
+    """Enable or disable Zigbee2MQTT scene learning."""
+
+    _attr_name = "Z2M Scene Learning"
+    _attr_entity_category = EntityCategory.CONFIG
+    _attr_should_poll = True
+
+    def __init__(self, hub: StatefulScenes.Hub) -> None:
+        """Initialize the switch."""
+        self._hub = hub
+        self._attr_unique_id = (
+            f"{hub.scenes[0].id if hub.scenes else 'hub'}_z2m_learning"
+        )
+        self._is_on = hub.z2m_learning_enabled
+
+    @property
+    def is_on(self) -> bool:
+        """Return current on/off state."""
+        return self._is_on
+
+    async def async_turn_on(self, **kwargs) -> None:
+        """Turn on learning."""
+        self._hub.enable_z2m_learning()
+        self._is_on = True
+
+    async def async_turn_off(self, **kwargs) -> None:
+        """Turn off learning."""
+        self._hub.disable_z2m_learning()
+        self._is_on = False
+
+    async def async_update(self) -> None:
+        """Refresh state from hub."""
+        self._is_on = self._hub.z2m_learning_enabled
+
+    async def async_added_to_hass(self) -> None:
+        """Handle entity added to hass."""
+        state = await self.async_get_last_state()
+        if state and state.state == STATE_ON:
+            self._hub.enable_z2m_learning()
+            self._is_on = True

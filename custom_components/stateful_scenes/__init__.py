@@ -49,6 +49,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             hass=hass,
             scene_confs=scene_confs,
             number_tolerance=entry.data[CONF_NUMBER_TOLERANCE],
+            **entry.data,
         )
         hass.data[DOMAIN][entry.entry_id] = hub
 
@@ -76,7 +77,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Handle removal of an entry."""
     if unloaded := await hass.config_entries.async_unload_platforms(entry, PLATFORMS):
-        hass.data[DOMAIN].pop(entry.entry_id)
+        hub_or_scene = hass.data[DOMAIN].pop(entry.entry_id)
+        if hasattr(hub_or_scene, "async_cleanup"):
+            await hub_or_scene.async_cleanup()
     return unloaded
 
 

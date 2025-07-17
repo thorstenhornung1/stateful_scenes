@@ -18,6 +18,12 @@ from .const import (
     CONF_SCENE_LEARN,
     CONF_SCENE_NAME,
     CONF_SCENE_NUMBER_TOLERANCE,
+    CONF_Z2M_LEARNING_ENABLED,
+    CONF_Z2M_API_URL,
+    CONF_Z2M_TRANSITION_TIME,
+    DEFAULT_Z2M_LEARNING_ENABLED,
+    DEFAULT_Z2M_API_URL,
+    DEFAULT_Z2M_TRANSITION_TIME,
     SceneStateAttributes,
     StatefulScenesYamlInvalid,
 )
@@ -634,6 +640,7 @@ class Hub:
         hass: HomeAssistant,
         scene_confs: dict[str, Any],
         number_tolerance: int = 1,
+        **config: Any,
     ) -> None:
         """Initialize the Hub class.
 
@@ -641,6 +648,7 @@ class Hub:
             hass (HomeAssistant): Home Assistant instance
             scene_confs (dict[str, Any]): Scene configurations from the scene file
             number_tolerance (int): Tolerance for comparing numbers
+            **config: Additional hub options
 
         Raises:
             StatefulScenesYamlNotFound: If the yaml file is not found
@@ -652,6 +660,16 @@ class Hub:
         self.scenes: list[Scene] = []
         self.scene_confs: list[dict[str, Any]] = []
 
+        self.z2m_learning_enabled = config.get(
+            CONF_Z2M_LEARNING_ENABLED, DEFAULT_Z2M_LEARNING_ENABLED
+        )
+        self.z2m_api_url = config.get(CONF_Z2M_API_URL, DEFAULT_Z2M_API_URL)
+        self.z2m_transition_time = config.get(
+            CONF_Z2M_TRANSITION_TIME, DEFAULT_Z2M_TRANSITION_TIME
+        )
+        self.z2m_learner = None
+        self._z2m_task = None
+
         for scene_conf in scene_confs:
             if not self.validate_scene(scene_conf):
                 continue
@@ -662,6 +680,9 @@ class Hub:
                 )
             )
             self.scene_confs.append(self.extract_scene_configuration(scene_conf))
+
+        if self.z2m_learning_enabled:
+            self.enable_z2m_learning()
 
     def validate_scene(self, scene_conf: dict) -> None:
         """Validate scene configuration.
@@ -760,3 +781,33 @@ class Hub:
         return next(
             (scene for scene in self.scenes if scene.entity_id == scene_id), None
         )
+
+    def enable_z2m_learning(self) -> None:
+        """Enable Zigbee2MQTT learning."""
+        try:
+            if self.z2m_learner is None:
+                from .z2m import Z2MSceneLearner
+
+                self.z2m_learner = Z2MSceneLearner(self.hass, self)
+                self._z2m_task = self.hass.async_create_task(
+                    self.z2m_learner.start_learning()
+                )
+            self.z2m_learning_enabled = True
+        except Exception as err:  # pragma: no cover - best effort
+            _LOGGER.error("Failed to enable Z2M learning: %s", err)
+            self.z2m_learning_enabled = False
+
+    def disable_z2m_learning(self) -> None:
+        """Disable Zigbee2MQTT learning."""
+        if self._z2m_task and not self._z2m_task.done():
+            self._z2m_task.cancel()
+        if self.z2m_learner is not None:
+            self.hass.async_create_task(self.z2m_learner.stop_learning())
+            self.z2m_learner = None
+        self._z2m_task = None
+        self.z2m_learning_enabled = False
+
+    async def async_cleanup(self) -> None:
+        """Cleanup hub resources."""
+        if self.z2m_learning_enabled:
+            self.disable_z2m_learning()
