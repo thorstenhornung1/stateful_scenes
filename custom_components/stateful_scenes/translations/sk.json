@@ -53,22 +53,24 @@
     "issues": {
         "duplicate_scene_ids": {
             "title": "Nájdené duplicitné ID scén",
-            "description": "{scene_count} scén má rovnaké ID.\n{scene_list}",
-            "fix_flow": {
-                "confirm": {
-                    "title": "Opraviť duplicitné ID scén",
-                    "description": "Priradiť nové jedinečné ID scénam s duplikátmi."
-                }
-            }
+            "description": "{scene_count} scén má rovnaké ID.\n{scene_list}"
         },
         "empty_scene_attributes": {
             "title": "Nájdené prázdne atribúty scény",
-            "description": "{scene_count} scén obsahuje prázdne atribúty.\n{scene_list}",
-            "fix_flow": {
-                "confirm": {
-                    "title": "Vyčistiť prázdne atribúty",
-                    "description": "Odstrániť atribúty bez hodnoty."
-                }
+            "description": "{scene_count} scén obsahuje prázdne atribúty.\n{scene_list}"
+        }
+    },
+    "repairs": {
+        "duplicate_scene_ids": {
+            "confirm": {
+                "title": "Opraviť duplicitné ID scén",
+                "description": "Priradiť nové jedinečné ID scénam s duplikátmi."
+            }
+        },
+        "empty_scene_attributes": {
+            "confirm": {
+                "title": "Vyčistiť prázdne atribúty",
+                "description": "Odstrániť atribúty bez hodnoty."
             }
         }
     }

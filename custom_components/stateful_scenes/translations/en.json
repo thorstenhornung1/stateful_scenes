@@ -53,22 +53,24 @@
     "issues": {
         "duplicate_scene_ids": {
             "title": "Duplicate Scene IDs Found",
-            "description": "Stateful Scenes detected {scene_count} scenes with duplicate IDs.\n{scene_list}",
-            "fix_flow": {
-                "confirm": {
-                    "title": "Fix Duplicate Scene IDs",
-                    "description": "Assign new unique IDs to scenes with duplicates."
-                }
-            }
+            "description": "Stateful Scenes detected {scene_count} scenes with duplicate IDs.\n{scene_list}"
         },
         "empty_scene_attributes": {
             "title": "Empty Scene Attributes Detected",
-            "description": "Stateful Scenes found {scene_count} scenes with empty attributes.\n{scene_list}",
-            "fix_flow": {
-                "confirm": {
-                    "title": "Clean Empty Scene Attributes",
-                    "description": "Remove attributes that have no value."
-                }
+            "description": "Stateful Scenes found {scene_count} scenes with empty attributes.\n{scene_list}"
+        }
+    },
+    "repairs": {
+        "duplicate_scene_ids": {
+            "confirm": {
+                "title": "Fix Duplicate Scene IDs",
+                "description": "Assign new unique IDs to scenes with duplicates."
+            }
+        },
+        "empty_scene_attributes": {
+            "confirm": {
+                "title": "Clean Empty Scene Attributes",
+                "description": "Remove attributes that have no value."
             }
         }
     }

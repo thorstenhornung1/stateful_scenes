@@ -52,22 +52,24 @@
     "issues": {
         "duplicate_scene_ids": {
             "title": "Dubbele scène-ID's gevonden",
-            "description": "{scene_count} scènes hebben dezelfde ID.\n{scene_list}",
-            "fix_flow": {
-                "confirm": {
-                    "title": "Dubbele ID's oplossen",
-                    "description": "Wijs nieuwe unieke ID's toe aan scènes met duplicaten."
-                }
-            }
+            "description": "{scene_count} scènes hebben dezelfde ID.\n{scene_list}"
         },
         "empty_scene_attributes": {
             "title": "Lege scène attributen gedetecteerd",
-            "description": "{scene_count} scènes bevatten lege attributen.\n{scene_list}",
-            "fix_flow": {
-                "confirm": {
-                    "title": "Lege attributen opschonen",
-                    "description": "Verwijder attributen zonder waarde."
-                }
+            "description": "{scene_count} scènes bevatten lege attributen.\n{scene_list}"
+        }
+    },
+    "repairs": {
+        "duplicate_scene_ids": {
+            "confirm": {
+                "title": "Dubbele ID's oplossen",
+                "description": "Wijs nieuwe unieke ID's toe aan scènes met duplicaten."
+            }
+        },
+        "empty_scene_attributes": {
+            "confirm": {
+                "title": "Lege attributen opschonen",
+                "description": "Verwijder attributen zonder waarde."
             }
         }
     }
