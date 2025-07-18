@@ -49,5 +49,27 @@
             "no_entity_id": "No entity ID found",
             "hub_not_found": "Main entry not found, configure Stateful Scenes first"
         }
+    },
+    "issues": {
+        "duplicate_scene_ids": {
+            "title": "Duplicate Scene IDs Found",
+            "description": "Stateful Scenes detected {scene_count} scenes with duplicate IDs.\n{scene_list}",
+            "fix_flow": {
+                "confirm": {
+                    "title": "Fix Duplicate Scene IDs",
+                    "description": "Assign new unique IDs to scenes with duplicates."
+                }
+            }
+        },
+        "empty_scene_attributes": {
+            "title": "Empty Scene Attributes Detected",
+            "description": "Stateful Scenes found {scene_count} scenes with empty attributes.\n{scene_list}",
+            "fix_flow": {
+                "confirm": {
+                    "title": "Clean Empty Scene Attributes",
+                    "description": "Remove attributes that have no value."
+                }
+            }
+        }
     }
 }

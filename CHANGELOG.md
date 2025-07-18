@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.3](https://github.com/hugobloem/stateful_scenes/compare/v1.7.2...v1.7.3) (2025-07-17)
+
+### 🚀 Features
+
+* add repair system to detect duplicate scene IDs and empty attributes
+
+
 ## [1.7.2](https://github.com/hugobloem/stateful_scenes/compare/v1.7.1...v1.7.2) (2025-07-05)
 
 
