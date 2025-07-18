@@ -651,17 +651,35 @@ class Hub:
         self.hass = hass
         self.scenes: list[Scene] = []
         self.scene_confs: list[dict[str, Any]] = []
+        self._used_ids: set[str] = set()
 
         for scene_conf in scene_confs:
             if not self.validate_scene(scene_conf):
                 continue
-            self.scenes.append(
-                Scene(
-                    self.hass,
-                    self.extract_scene_configuration(scene_conf),
-                )
-            )
-            self.scene_confs.append(self.extract_scene_configuration(scene_conf))
+            extracted = self.extract_scene_configuration(scene_conf)
+            extracted["id"] = self._ensure_unique_runtime_id(extracted["id"])
+            self.scenes.append(Scene(self.hass, extracted))
+            self.scene_confs.append(extracted)
+
+    def _ensure_unique_runtime_id(self, original_id: str) -> str:
+        """Ensure runtime unique IDs to avoid conflicts."""
+        if original_id not in self._used_ids:
+            self._used_ids.add(original_id)
+            return original_id
+
+        counter = 1
+        new_id = f"{original_id}_runtime_{counter}"
+        while new_id in self._used_ids:
+            counter += 1
+            new_id = f"{original_id}_runtime_{counter}"
+
+        _LOGGER.warning(
+            "Duplicate scene ID '%s' found. Using runtime ID '%s'.",
+            original_id,
+            new_id,
+        )
+        self._used_ids.add(new_id)
+        return new_id
 
     def validate_scene(self, scene_conf: dict) -> None:
         """Validate scene configuration.
@@ -715,7 +733,8 @@ class Hub:
             if domain in ATTRIBUTES_TO_CHECK:
                 for attribute, value in scene_attributes.items():
                     if attribute in ATTRIBUTES_TO_CHECK.get(domain):
-                        attributes[attribute] = value
+                        if value is not None and value != "":
+                            attributes[attribute] = value
 
             entities[entity_id] = attributes
 
