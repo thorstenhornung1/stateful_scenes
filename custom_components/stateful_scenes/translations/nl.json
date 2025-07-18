@@ -48,5 +48,27 @@
             "no_entity_id": "Geen entiteit ID gevonden",
             "hub_not_found": "Hoofd integratie niet gevonden, configureer eerst Stateful Scenes"
         }
+    },
+    "issues": {
+        "duplicate_scene_ids": {
+            "title": "Dubbele scène-ID's gevonden",
+            "description": "{scene_count} scènes hebben dezelfde ID.\n{scene_list}",
+            "fix_flow": {
+                "confirm": {
+                    "title": "Dubbele ID's oplossen",
+                    "description": "Wijs nieuwe unieke ID's toe aan scènes met duplicaten."
+                }
+            }
+        },
+        "empty_scene_attributes": {
+            "title": "Lege scène attributen gedetecteerd",
+            "description": "{scene_count} scènes bevatten lege attributen.\n{scene_list}",
+            "fix_flow": {
+                "confirm": {
+                    "title": "Lege attributen opschonen",
+                    "description": "Verwijder attributen zonder waarde."
+                }
+            }
+        }
     }
 }

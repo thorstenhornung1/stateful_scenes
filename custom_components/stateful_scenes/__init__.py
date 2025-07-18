@@ -22,6 +22,7 @@ from .const import (
 from .discovery import DiscoveryManager
 from .StatefulScenes import Hub, Scene
 from .helpers import async_cleanup_orphaned_entities
+from .repairs import async_register_repairs, check_for_repair_issues
 
 PLATFORMS: list[Platform] = [
     Platform.NUMBER,
@@ -44,6 +45,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             raise StatefulScenesYamlNotFound("Scenes file not specified.")
 
         scene_confs = await load_scenes_file(entry.data[CONF_SCENE_PATH])
+
+        await check_for_repair_issues(hass, scene_confs)
+        async_register_repairs(hass, entry.data[CONF_SCENE_PATH])
 
         hub = Hub(
             hass=hass,
