@@ -662,7 +662,12 @@ class Hub:
             self.scene_confs.append(extracted)
 
     def _ensure_unique_runtime_id(self, original_id: str) -> str:
-        """Ensure runtime unique IDs to avoid conflicts."""
+        """Ensure runtime unique IDs to avoid conflicts.
+
+        This method only adjusts IDs for the running instance so scenes can be
+        created even if duplicates exist. Users are alerted via the repairs
+        system to permanently fix IDs in ``scenes.yaml``.
+        """
         if original_id not in self._used_ids:
             self._used_ids.add(original_id)
             return original_id
