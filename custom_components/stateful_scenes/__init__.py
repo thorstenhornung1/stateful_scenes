@@ -21,7 +21,7 @@ from .const import (
 )
 from .discovery import DiscoveryManager
 from .StatefulScenes import Hub, Scene
-from .helpers import async_cleanup_orphaned_entities
+from .helpers import async_cleanup_orphaned_entities, prune_empty_scene_values
 
 PLATFORMS: list[Platform] = [
     Platform.NUMBER,
@@ -103,4 +103,8 @@ async def load_scenes_file(scene_path) -> list:
     if not scenes_confs or not isinstance(scenes_confs, list):
         raise StatefulScenesYamlInvalid("No scenes found in " + scene_path)
 
-    return scenes_confs
+    return [
+        prune_empty_scene_values(scene_conf)
+        for scene_conf in scenes_confs
+        if scene_conf is not None
+    ]
