@@ -64,7 +64,12 @@ def get_area_from_entity_id(hass: HomeAssistant, entity_id: str | None) -> str:
 
 
 def prune_empty_scene_values(data: Any) -> Any:
-    """Recursively remove null and empty values from scene definitions."""
+    """Recursively remove null and empty values from scene definitions.
+
+    The helper returns ``None`` when collections are fully pruned so callers can
+    easily drop empty containers (for example entities without any attributes
+    after sanitisation).
+    """
 
     if isinstance(data, dict):
         pruned: dict[Any, Any] = {}
@@ -79,7 +84,7 @@ def prune_empty_scene_values(data: Any) -> Any:
 
             pruned[key] = cleaned
 
-        return pruned
+        return pruned or None
 
     if isinstance(data, list):
         pruned_list: list[Any] = []
@@ -94,7 +99,7 @@ def prune_empty_scene_values(data: Any) -> Any:
 
             pruned_list.append(cleaned)
 
-        return pruned_list
+        return pruned_list or None
 
     return data
 

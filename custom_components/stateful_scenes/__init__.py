@@ -103,8 +103,15 @@ async def load_scenes_file(scene_path) -> list:
     if not scenes_confs or not isinstance(scenes_confs, list):
         raise StatefulScenesYamlInvalid("No scenes found in " + scene_path)
 
-    return [
-        prune_empty_scene_values(scene_conf)
-        for scene_conf in scenes_confs
-        if scene_conf is not None
-    ]
+    sanitized_scenes: list = []
+    for scene_conf in scenes_confs:
+        if scene_conf is None:
+            continue
+
+        cleaned_conf = prune_empty_scene_values(scene_conf)
+        if cleaned_conf is None:
+            continue
+
+        sanitized_scenes.append(cleaned_conf)
+
+    return sanitized_scenes

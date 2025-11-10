@@ -111,14 +111,26 @@ class Scene:
     def __init__(self, hass: HomeAssistant, scene_conf: dict) -> None:
         """Initialize."""
         self.hass = hass
-        self.name: str = scene_conf[CONF_SCENE_NAME]
-        self._entity_id: str = scene_conf[CONF_SCENE_ENTITY_ID]
-        self._number_tolerance = scene_conf[CONF_SCENE_NUMBER_TOLERANCE]
-        self._id = scene_conf[CONF_SCENE_ID]
-        self._area_id: str = scene_conf[CONF_SCENE_AREA]
-        self.learn = scene_conf[CONF_SCENE_LEARN]
-        self.entities = scene_conf[CONF_SCENE_ENTITIES]
-        self.icon = scene_conf[CONF_SCENE_ICON]
+        self.name: str = str(scene_conf.get(CONF_SCENE_NAME, "") or "")
+        self._entity_id: str | None = scene_conf.get(CONF_SCENE_ENTITY_ID)
+        self._number_tolerance = scene_conf.get(
+            CONF_SCENE_NUMBER_TOLERANCE, 1
+        )
+        candidate_id = scene_conf.get(CONF_SCENE_ID) or self._entity_id or self.name
+        if not candidate_id:
+            candidate_id = "stateful_scene"
+        self._id = str(candidate_id)
+        if not self.name:
+            self.name = self._id
+        self._area_id: str = str(scene_conf.get(CONF_SCENE_AREA, "") or "")
+        self.learn = bool(scene_conf.get(CONF_SCENE_LEARN, False))
+        entities_conf = scene_conf.get(CONF_SCENE_ENTITIES, {})
+        if not isinstance(entities_conf, dict):
+            raise StatefulScenesYamlInvalid(
+                "Scene entities must be a mapping."
+            )
+        self.entities = entities_conf
+        self.icon = scene_conf.get(CONF_SCENE_ICON)
         self._is_on = False
         self._transition_time: float = 0.0
         self._restore_on_deactivate = True
@@ -156,7 +168,7 @@ class Scene:
         )
 
     @property
-    def entity_id(self) -> str:
+    def entity_id(self) -> str | None:
         """Return the entity_id of the scene."""
         return self._entity_id
 
@@ -181,7 +193,8 @@ class Scene:
         """Turn on the scene."""
         if self._entity_id is None:
             raise StatefulScenesYamlInvalid(
-                "Cannot find entity_id for: " + self.name + self._entity_id
+                "Cannot find entity_id for: "
+                + (self.name or str(self._id))
             )
 
         # Store the current state of the entities
@@ -683,22 +696,39 @@ class Hub:
 
         """
 
-        if "entities" not in scene_conf:
+        scene_name = (
+            scene_conf.get("name")
+            or scene_conf.get("id")
+            or scene_conf.get("entity_id")
+            or "<unnamed scene>"
+        )
+
+        entities_conf = scene_conf.get("entities")
+        if not isinstance(entities_conf, dict) or not entities_conf:
             raise StatefulScenesYamlInvalid(
-                "Scene is missing entities: " + scene_conf["name"]
+                "Scene is missing entities: " + str(scene_name)
             )
 
-        if "id" not in scene_conf:
+        if not scene_conf.get("id"):
             raise StatefulScenesYamlInvalid(
-                "Scene is missing id: " + scene_conf["name"]
+                "Scene is missing id: " + str(scene_name)
             )
 
-        for entity_id, scene_attributes in scene_conf["entities"].items():
-            if "state" not in scene_attributes:
+        for entity_id, scene_attributes in entities_conf.items():
+            if not isinstance(scene_attributes, dict):
+                raise StatefulScenesYamlInvalid(
+                    "Scene has invalid attributes for entity "
+                    + entity_id
+                    + " in "
+                    + str(scene_name)
+                )
+
+            if "state" not in scene_attributes or scene_attributes.get("state") is None:
                 raise StatefulScenesYamlInvalid(
                     "Scene is missing state for entity "
                     + entity_id
-                    + scene_conf["name"]
+                    + " in "
+                    + str(scene_name)
                 )
 
         return True
@@ -746,13 +776,22 @@ class Hub:
                 resolved_area_name = area_name(self.hass, resolved_area_id)
                 resolved_area = resolved_area_name or ""
 
+        raw_name = scene_conf.get("name")
+        if not raw_name:
+            if entity_id is not None:
+                raw_name = get_name_from_entity_id(self.hass, entity_id) or entity_id
+            else:
+                raw_name = scene_conf.get("id") or "Stateful Scene"
+
+        scene_id = scene_conf.get("id") or entity_id or raw_name or "stateful_scene"
+
         return {
-            "name": scene_conf["name"],
-            "id": scene_conf.get("id", entity_id),
+            "name": str(raw_name),
+            "id": str(scene_id),
             "icon": icon,
             "entity_id": entity_id,
             "area": resolved_area,
-            "learn": scene_conf.get("learn", False),
+            "learn": bool(scene_conf.get("learn", False)),
             "entities": entities,
             "number_tolerance": scene_conf.get(
                 "number_tolerance", self.number_tolerance
@@ -773,7 +812,9 @@ class Hub:
 
     def get_available_scenes(self) -> list[str]:
         """Get list of all scenes from the hub."""
-        scene_entities: list[str] = [scene.entity_id for scene in self.scenes]
+        scene_entities: list[str] = [
+            scene.entity_id for scene in self.scenes if scene.entity_id
+        ]
         return scene_entities
 
     def get_scene(self, scene_id: str) -> Scene | None:
