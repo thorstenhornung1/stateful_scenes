@@ -69,7 +69,8 @@ class StatefulSceneOffSelect(SelectEntity, RestoreEntity):
         self._scene = scene
         self._hub = hub
         self.unique_id = f"{scene.id}_off_scene"
-        self._attr_name = f"{scene.name} Off Scene"
+        scene_label = scene.name or scene.id or "Stateful Scene"
+        self._attr_name = f"{scene_label} Off Scene"
         self._cache: dict[str, bool | DeviceInfo] = {}
         self._attr_entity_category = EntityCategory.CONFIG
         self._restore_on_deactivate_state: str | None = None
@@ -202,9 +203,11 @@ class StatefulSceneOffSelect(SelectEntity, RestoreEntity):
             )
 
         # Set up callback for future state changes
-        restore_entity_id = (
-            f"switch.{self._scene.name.lower().replace(' ', '_')}_restore_on_deactivate"
-        )
+        slug_source = self._scene.name or self._scene.id or "stateful_scene"
+        slug = str(slug_source).strip().replace(" ", "_").lower()
+        if not slug:
+            slug = "stateful_scene"
+        restore_entity_id = f"switch.{slug}_restore_on_deactivate"
         async_track_state_change_event(
             self.hass, [restore_entity_id], self.async_update_restore_state
         )

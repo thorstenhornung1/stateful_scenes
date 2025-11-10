@@ -1,8 +1,12 @@
 """Helper functions for stateful_scenes."""
 
+from __future__ import annotations
+
 import logging
+from typing import Any
+
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry, device_registry, area_registry
+from homeassistant.helpers import area_registry, device_registry, entity_registry
 from homeassistant.helpers.template import state_attr
 
 _LOGGER = logging.getLogger(__name__)
@@ -57,6 +61,47 @@ def get_area_from_entity_id(hass: HomeAssistant, entity_id: str | None) -> str:
         return areas[device.area_id].name
 
     return ""
+
+
+def prune_empty_scene_values(data: Any) -> Any:
+    """Recursively remove null and empty values from scene definitions.
+
+    The helper returns ``None`` when collections are fully pruned so callers can
+    easily drop empty containers (for example entities without any attributes
+    after sanitisation).
+    """
+
+    if isinstance(data, dict):
+        pruned: dict[Any, Any] = {}
+        for key, value in data.items():
+            if value is None:
+                continue
+
+            cleaned = prune_empty_scene_values(value)
+
+            if cleaned in (None, {}, [], ()):  # discard empty containers
+                continue
+
+            pruned[key] = cleaned
+
+        return pruned or None
+
+    if isinstance(data, list):
+        pruned_list: list[Any] = []
+        for item in data:
+            if item is None:
+                continue
+
+            cleaned = prune_empty_scene_values(item)
+
+            if cleaned in (None, {}, [], ()):  # discard empty containers
+                continue
+
+            pruned_list.append(cleaned)
+
+        return pruned_list or None
+
+    return data
 
 
 def _extract_scene_id_from_unique_id(unique_id: str) -> str | None:
