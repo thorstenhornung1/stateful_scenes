@@ -797,6 +797,18 @@ class Hub:
                 "number_tolerance", self.number_tolerance
             ),
         }
+        return {
+            "name": scene_conf["name"],
+            "id": scene_conf.get("id", entity_id),
+            "icon": icon,
+            "entity_id": entity_id,
+            "area": resolved_area,
+            "learn": scene_conf.get("learn", False),
+            "entities": entities,
+            "number_tolerance": scene_conf.get(
+                "number_tolerance", self.number_tolerance
+            ),
+        }
 
     def prepare_external_scene(self, entity_id, entities) -> dict:
         """Prepare external scene configuration."""
