@@ -1,8 +1,12 @@
 """Helper functions for stateful_scenes."""
 
+from __future__ import annotations
+
 import logging
+from typing import Any
+
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry, device_registry, area_registry
+from homeassistant.helpers import area_registry, device_registry, entity_registry
 from homeassistant.helpers.template import state_attr
 
 _LOGGER = logging.getLogger(__name__)
@@ -13,9 +17,16 @@ def get_id_from_entity_id(hass: HomeAssistant, entity_id: str) -> str:
     return entity_registry.async_resolve_entity_id(er, entity_id)
 
 
-def get_name_from_entity_id(hass: HomeAssistant, entity_id: str) -> str:
+def get_name_from_entity_id(hass: HomeAssistant, entity_id: str | None) -> str:
     """Get scene name from entity_id."""
-    return state_attr(hass, entity_id, "friendly_name")
+    if not entity_id:
+        return ""
+
+    friendly_name = state_attr(hass, entity_id, "friendly_name")
+    if friendly_name is None:
+        return entity_id
+
+    return friendly_name
 
 
 def get_icon_from_entity_id(hass: HomeAssistant, entity_id: str) -> str:
@@ -23,16 +34,49 @@ def get_icon_from_entity_id(hass: HomeAssistant, entity_id: str) -> str:
     return state_attr(hass, entity_id, "icon")
 
 
-def get_area_from_entity_id(hass: HomeAssistant, entity_id: str) -> str:
+def get_area_from_entity_id(hass: HomeAssistant, entity_id: str | None) -> str:
     """Get scene area from entity_id."""
+    if not entity_id:
+        return ""
+
     er = entity_registry.async_get(hass)
     areas = area_registry.async_get(hass).areas
     entity = er.async_get(entity_id)
-    if entity.area_id is not None:
+
+    if entity is None:
+        return ""
+
+    if entity.area_id is not None and entity.area_id in areas:
         return areas[entity.area_id].name
+
+    if entity.device_id is None:
+        return ""
+
     dr = device_registry.async_get(hass)
     device = dr.async_get(entity.device_id)
-    return areas[device.area_id].name if device.area_id is not None else None
+    if device is None or device.area_id is None:
+        return ""
+
+    if device.area_id in areas:
+        return areas[device.area_id].name
+
+    return ""
+
+
+def prune_empty_scene_values(data: Any) -> Any:
+    """Recursively remove keys with ``None`` values from scene definitions."""
+
+    if isinstance(data, dict):
+        return {
+            key: prune_empty_scene_values(value)
+            for key, value in data.items()
+            if value is not None
+        }
+
+    if isinstance(data, list):
+        return [prune_empty_scene_values(item) for item in data if item is not None]
+
+    return data
 
 
 def _extract_scene_id_from_unique_id(unique_id: str) -> str | None:

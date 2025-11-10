@@ -112,7 +112,7 @@ class StatefulSceneOffSelect(SelectEntity, RestoreEntity):
                         scenes.append((state.entity_id, friendly_name))
 
         # Sort scenes by friendly name
-        scenes.sort(key=lambda x: x[1].lower())
+        scenes.sort(key=lambda x: (x[1] or "").casefold())
 
         scenes.insert(0, (DEFAULT_OFF_SCENE_ENTITY_ID, DEFAULT_OFF_SCENE_ENTITY_ID))
 
