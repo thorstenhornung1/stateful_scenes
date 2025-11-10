@@ -622,7 +622,13 @@ class Scene:
         for entity in entities:
             state = hass.states.get(entity)
             conf[entity] = {"state": state.state}
-            conf[entity].update(state.attributes)
+            conf[entity].update(
+                {
+                    key: value
+                    for key, value in state.attributes.items()
+                    if value is not None
+                }
+            )
         return conf
 
 
@@ -719,22 +725,33 @@ class Hub:
             if domain in ATTRIBUTES_TO_CHECK:
                 for attribute, value in scene_attributes.items():
                     if attribute in ATTRIBUTES_TO_CHECK.get(domain):
+                        if value is None:
+                            continue
                         attributes[attribute] = value
 
             entities[entity_id] = attributes
 
-        entity_id = scene_conf.get("entity_id", None)
+        entity_id = scene_conf.get("entity_id")
         if entity_id is None:
             entity_id = get_entity_id_from_id(self.hass, scene_conf.get("id"))
+
+        icon = scene_conf.get("icon")
+        if icon is None and entity_id is not None:
+            icon = get_icon_from_entity_id(self.hass, entity_id)
+
+        resolved_area = ""
+        if entity_id is not None:
+            resolved_area_id = area_id(self.hass, entity_id)
+            if resolved_area_id is not None:
+                resolved_area_name = area_name(self.hass, resolved_area_id)
+                resolved_area = resolved_area_name or ""
 
         return {
             "name": scene_conf["name"],
             "id": scene_conf.get("id", entity_id),
-            "icon": scene_conf.get(
-                "icon", get_icon_from_entity_id(self.hass, entity_id)
-            ),
+            "icon": icon,
             "entity_id": entity_id,
-            "area": area_name(self.hass, area_id(self.hass, entity_id)),
+            "area": resolved_area,
             "learn": scene_conf.get("learn", False),
             "entities": entities,
             "number_tolerance": scene_conf.get(
