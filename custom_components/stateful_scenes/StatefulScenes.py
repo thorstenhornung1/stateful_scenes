@@ -622,7 +622,13 @@ class Scene:
         for entity in entities:
             state = hass.states.get(entity)
             conf[entity] = {"state": state.state}
-            conf[entity].update(state.attributes)
+            conf[entity].update(
+                {
+                    key: value
+                    for key, value in state.attributes.items()
+                    if value is not None
+                }
+            )
         return conf
 
 
@@ -719,6 +725,8 @@ class Hub:
             if domain in ATTRIBUTES_TO_CHECK:
                 for attribute, value in scene_attributes.items():
                     if attribute in ATTRIBUTES_TO_CHECK.get(domain):
+                        if value is None:
+                            continue
                         attributes[attribute] = value
 
             entities[entity_id] = attributes
